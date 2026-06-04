@@ -16,12 +16,17 @@
 
 FROM gcr.io/oss-fuzz-base/base-builder
 RUN sed -i s/snapshot.ubuntu.com/archive.ubuntu.com/g /etc/apt/sources.list 2>/dev/null || true
-RUN apt-get update --fix-missing && apt-get install -y --fix-missing make autoconf automake libtool
+RUN apt-get update --fix-missing && apt-get install -y --fix-missing make autoconf automake libtool curl
 RUN git clone --depth 1 https://gitlab.xiph.org/xiph/ogg.git
 COPY . libtheora
 RUN rm -rf libtheora/mayhem
-RUN git clone --depth 1 https://github.com/guidovranken/oss-fuzz-fuzzers.git
-RUN git clone --depth 1 https://github.com/guidovranken/fuzzing-headers.git
+RUN git clone --depth 1 https://github.com/tmatth/oss-fuzz-fuzzers.git
+RUN git clone --depth 1 https://github.com/fuzzamos/fuzzing-headers.git
+RUN curl -sSL -o libtheora/m4/as-ac-expand.m4 https://gitlab.xiph.org/xiph/theora/-/raw/master/m4/as-ac-expand.m4 && \
+    curl -sSL -o libtheora/m4/as-gcc-inline-assembly.m4 https://gitlab.xiph.org/xiph/theora/-/raw/master/m4/as-gcc-inline-assembly.m4 && \
+    curl -sSL -o libtheora/m4/ogg.m4 https://gitlab.xiph.org/xiph/theora/-/raw/master/m4/ogg.m4 && \
+    curl -sSL -o libtheora/m4/pkg.m4 https://gitlab.xiph.org/xiph/theora/-/raw/master/m4/pkg.m4 && \
+    curl -sSL -o libtheora/m4/vorbis.m4 https://gitlab.xiph.org/xiph/theora/-/raw/master/m4/vorbis.m4
 COPY mayhem/build.sh $SRC/
 
 ENV FUZZING_LANGUAGE=c++ SANITIZER=address ARCHITECTURE=x86_64
